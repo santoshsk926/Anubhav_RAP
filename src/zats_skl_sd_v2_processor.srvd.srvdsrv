@@ -1,0 +1,13 @@
+@EndUserText.label: 'Service Definition'
+define service ZATS_SKL_SD_V2_PROCESSOR {
+  expose ZATS_SKL_TRAVEL_PROCESSOR    as Travel;
+  expose ZATS_SKL_BOOKING_PROCESSOR   as Booking;
+  expose ZATS_SKL_BOOKSUPPL_PROCESSOR as Booksupplement;
+  expose ZATS_SKL_M_ATTACH_PROCESSOR  as Attachment;
+  expose /DMO/I_Agency                as Agency;
+  expose /DMO/I_Customer              as Customer;
+  expose /DMO/I_Carrier               as Carrier;
+  expose /DMO/I_Connection            as Connection;
+  expose /DMO/I_Overall_Status_VH     as OverallStatus;
+  expose /DMO/I_Booking_Status_VH     as BookingStatus;
+}

@@ -1,0 +1,48 @@
+projection;
+strict ( 2 );
+use draft;
+
+define behavior for ZATS_SKL_TRAVEL_PROCESSOR alias Travel
+implementation in class zbp_ats_skl_travel_processor unique
+{
+  use create(augment,precheck);
+  use update(augment);
+  use delete;
+
+  use action copyTravel;
+  use association _Booking { create; with draft; }
+  use association _Attachment { create; with draft; }
+
+  //Draft Actions
+  use action Prepare;
+  use action Edit;
+  use action Discard;
+  use action Resume;
+  use action Activate;
+}
+
+define behavior for ZATS_SKL_BOOKING_PROCESSOR alias Booking
+{
+  use update;
+  use delete;
+
+  use association _Travel {with draft;}
+  use association _BookingSupplement { create; with draft; }
+}
+
+define behavior for ZATS_SKL_BOOKSUPPL_PROCESSOR alias BookingSuppl
+{
+  use update;
+  use delete;
+
+  use association _Travel {with draft;}
+  use association _Booking{with draft;}
+}
+
+define behavior for ZATS_SKL_M_attach_processor alias Attachment
+{
+  use update;
+  use delete;
+
+  use association _Travel {with draft;}
+}

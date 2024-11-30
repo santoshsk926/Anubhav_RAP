@@ -1,0 +1,136 @@
+@Metadata.layer: #CUSTOMER
+@UI.headerInfo:{
+    typeName: 'Travel',
+    typeNamePlural: 'Travels',
+    title: { value: 'TravelId' },
+    description: { value: '_Customer.FirstName' }
+    }
+annotate entity ZATS_SKL_TRAVEL_PROCESSOR with
+{
+  @UI.facet: [{ 
+                purpose: #HEADER,          -->Represents Facet is in Header
+                type:#DATAPOINT_REFERENCE, -->Represents a qualifier is used to link Facet and field
+                targetQualifier: 'price_data',
+                label: 'Flight Ticket Price',
+                position: 10
+               },{ 
+                purpose: #HEADER,
+                type:#DATAPOINT_REFERENCE, -->Represents a qualifier is used to link Facet and field
+                targetQualifier: 'status',
+                label: 'Status',
+                position: 20 
+               },{
+                 purpose: #STANDARD,       --> represents Facet comes in below header
+                 type:#COLLECTION,
+                 label: 'Additional Details',
+                 id: 'super',  --> id represents that it can have sub items. And sub items will use the key parentId and values are matched.            
+                 position: 10
+               },{
+                purpose: #STANDARD,
+                type:#IDENTIFICATION_REFERENCE,
+                label: 'More Info',
+                position:10,
+                parentId: 'super'
+               },{
+                purpose: #STANDARD,
+                type: #FIELDGROUP_REFERENCE,
+                label: 'Price Data',
+                position: 20,
+                parentId: 'super',
+                targetQualifier: 'pricing' 
+               },{
+                purpose: #STANDARD,
+                type: #FIELDGROUP_REFERENCE,
+                label: 'Dates',
+                position: 30,
+                parentId: 'super',
+                targetQualifier: 'dates' 
+                },{
+                purpose: #STANDARD,
+                type: #FIELDGROUP_REFERENCE,
+                label: 'Admin Info',
+                position: 40,
+                parentId: 'super',
+                targetQualifier: 'admin' 
+                },{ 
+                purpose: #STANDARD,        -->This is going to be second Facet below header
+                type: #LINEITEM_REFERENCE, --> Here we are trying to build a table of details. 
+                label: 'Bookings',
+                targetElement: '_Booking',  -->For the table to display the data we are referring to association. This association is a child
+                                            -->So, we have to mention _Booking: redirected to composition child ZATS_SKL_BOOKING_PROCESSOR
+                                            -->in ZATS_SKL_TRAVEL_PROCESSOR. Also this REDIRECTED syntax will work only in Projections.
+                position: 20
+                },{ 
+                purpose: #STANDARD,        
+                type: #LINEITEM_REFERENCE,  
+                label: 'Attachmentss',
+                targetElement: '_Attachment',
+                position: 30  }
+                 ]
+  @UI.selectionField: [{ position: 10 }]
+  @UI.lineItem: [{ position: 10 },
+  //Here the below step is written to create a button with the name "Copy This Travel". Its Factory action is declared in the Behavior Definition
+  // ZATS_SKL_TRAVEL and exposed in the Behavior Definition Projection ZATS_SKL_TRAVEL_PROCESSOR. The action name should match in all three places.
+  //inline: true will make the button display inside the table.   
+  { type: #FOR_ACTION, label:'Copy This Travel', dataAction: 'copyTravel' 
+  //inline: true 
+  }]
+  @UI.identification: [{ position: 10 },  -->For #IDENTIFICATION_REFERENCE type
+  //This will create the button Object page also.
+  { type: #FOR_ACTION, label:'Copy Maddi', dataAction: 'copyTravel' }]
+  TravelId;
+  @UI.selectionField: [{ position: 20 }]
+  @UI.lineItem: [{ position: 20 }]
+  @UI.identification: [{ position: 20 }]  -->For #IDENTIFICATION_REFERENCE type
+  AgencyId;
+  @UI.selectionField: [{ position: 30 }]
+  @UI.lineItem: [{ position: 30 }]
+  @UI.identification: [{ position: 10 }]  -->For #IDENTIFICATION_REFERENCE type
+  CustomerId;
+  @UI.lineItem: [{ position: 40 }]
+  @UI.fieldGroup: [{ qualifier: 'dates', label: 'Begin Date', position: 10 }]
+  BeginDate;
+  @UI.fieldGroup: [{ qualifier: 'dates', label: 'End Date', position: 20 }]
+  EndDate;
+  @UI.fieldGroup: [{ qualifier: 'pricing', label: 'Booking Fee', position: 10 }]
+  BookingFee;
+  @UI.selectionField: [{ position: 40 }]
+  @UI.lineItem: [{ position: 50 }]
+  @UI.dataPoint: { qualifier: 'price_data',
+                   title:'Flight Price'}
+  @UI.fieldGroup: [{ qualifier: 'pricing', label: 'Total Price', position: 20 }]                   
+  TotalPrice;
+  @UI.fieldGroup: [{ qualifier: 'pricing', label: 'Currency Code', position: 30 }]
+  CurrencyCode;
+  //Description;
+  @UI.selectionField: [{ position: 50 }]
+  @UI.lineItem: [ { position:70, criticality: 'Criticality', importance: #HIGH } ]
+  @UI.dataPoint: { title:'Travel Status', qualifier: 'status', criticality: 'Criticality' }
+  @UI.fieldGroup: [{ qualifier: 'dates', label: 'status', position: 30 }]
+  OverallStatus;
+  
+  //virtual elements.
+  @UI.lineItem: [ { position:80, importance: #HIGH } ]
+  @EndUserText.label: 'CO2Tax'
+  CO2Tax;
+  
+  @UI.lineItem: [ { position:90, importance: #HIGH } ]
+  @EndUserText.label: 'Day of Flight'
+  dayOfTheFlight;
+  
+//  @UI.fieldGroup: [{ qualifier: 'admin', label: 'Created By', position: 10 }]
+//  CreatedBy;
+//  @UI.fieldGroup: [{ qualifier: 'admin', label: 'Created At', position: 20 }]
+//  CreatedAt;
+//  @UI.fieldGroup: [{ qualifier: 'admin', label: 'Changed By', position: 30 }]
+//  LastChangedBy;
+//  @UI.fieldGroup: [{ qualifier: 'admin', label: 'Changed At', position: 40 }]
+//  LastChangedAt;
+  /* Associations */
+  //_agency;
+  //_Booking;
+  //_Currency;
+//  _Customer;
+  //_OverallStatus;
+
+}

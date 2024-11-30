@@ -1,0 +1,237 @@
+//Implementation will be written the below given class.
+managed implementation in class zbp_ats_skl_travel unique; //Here class is specified because after adding the statement 'WITH ADDITIONAL SAVE'
+//an error is coming in managed statement line, to avoid that we have added the class name
+//Guideline and best practice for definition to be followed
+strict ( 2 );
+with draft;
+//Define the behavior for Root Entity
+define behavior for ZATS_SKL_TRAVEL alias Travel
+//make the behavior pool/implementation for TRAVEL
+implementation in class zbp_ats_skl_travel unique //UNIQUE represents that there cannot be anymore behavior implementations corresponding
+//to this Travel. It is also a best practice to mark UNIQUE if we use STRICT mode.
+persistent table /dmo/travel_m  //Data will be inserted in this DB table
+
+//How RAP should handle the locks - If a travel request is locked
+//the other users cannot edit the childs - like its bookings and supplment
+lock master
+
+//When using draft it is mandatory to use total etag
+total etag LastChangedAt //Total etag is for the etag time stamp of the Draft Table.
+//controls the permissions and security settings for our RAP BO
+authorization master ( instance )
+
+//Etag field for update comparison
+etag master LastChangedAt
+
+//specify the draft table -> Table will be created by the RAP framework.
+draft table zats_skl_d_table
+early numbering //This is a feature through which we can assign numbers. When you add this statement, system will give suggestion to implement
+//numbering related methods and their definition.
+with additional save
+{
+  //here are the operations which RAP will generate automatically, since this is a Manage scenario.
+  create ( precheck );
+  update ( precheck );
+  delete;
+  //a booking can only be created with Travel Request, just like you cannot create Order Item without Order header. That is why framework
+  //generated the below statement in ZATS_SKL_TRAVEL
+  //We want to create a feature control i.e., we want to control the CREATION of BOOKING using Dynamic Feature Control for that we have
+  //added the line features:instance
+  association _Booking { create ( features : instance ); with draft; }  //Added DRAFT for Booking as well.
+
+  association _Attachment { create; with draft; }  //Added DRAFT for Attachment as well.
+
+  //Internal Action is a piece of code which is intended to be only consumed within our RAP BO
+  internal action reCalcTotalPrice;
+  //Define determination to execute the code when booking fee or currency code changes, so we calculate total price
+  determination CalculateTotalPrice on modify { create; field BookingFee, CurrencyCode; }
+
+  //checking custom business object rules(Validations)
+  //here validations will trigger on SAVE operation on CREATION and when below fields are modified.
+  validation validateHeaderData on save { create; field CustomerId, BeginDate, EndDate; }
+
+  //Static Feature Control -> We are basically setting some fields readonly and some fields mandatory at the very core level .
+  field ( readonly ) TravelId, TotalPrice, CreatedBy, CreatedAt, LastChangedBy, LastChangedAt;
+  field ( mandatory ) AgencyId, CustomerId, BeginDate, EndDate, OverallStatus, BookingFee, CurrencyCode;
+
+  //We have created a Factory Action with name copyTravel. By default a Factory Action is instance type. Association 1 represents that we can copy
+  //one instance at a time. After mentioning the action here, we will expose this action in the Behavior Projection ZATS_SKL_TRAVEL_PROCESSOR.
+  factory action copyTravel [1];
+
+  //Non Factory actions are used to modify the BO instance. Here our aim is to approve or reject a Travel request.
+  //$self -> Means its own business object.
+  //While adding the button in the MDE file, we have give the below names acceptTravel, rejectTravel in the dataAction property.
+  action ( features : instance ) acceptTravel result [1] $self;
+  action ( features : instance ) rejectTravel result [1] $self;
+
+  //Create a new determine action
+  determine action validationCustomer { validation validateHeaderData; }
+
+  // Adding side effect which inform RAP to reload the total price if the booking fee has been changed on the fronend.
+  side effects
+  {
+    //Side Effect1: When ever there is a change in Booking Fee, Recalculate Total Price
+    field Bookingfee affects field TotalPrice;
+    determine action validationCustomer executed on field CustomerId affects messages;
+  }
+
+  //adding the draft actions.
+  draft action Edit;
+  draft action Activate;
+  draft action Resume;
+  draft action Discard;
+  draft determine action Prepare;
+
+  //Mapping between DB table fields and Entity field alias. Without this Fiori application cannot write data to DB since the fields are different.
+  //When mapping is written, system will process only the fields mentioned here, framework will not go beyond these fields. SO we dont have to woryy about
+  //the fields which we create dynamically like case statements.
+  mapping for /dmo/travel_m
+    {
+      TravelId      = travel_id;
+      AgencyId      = agency_id;
+      BeginDate     = begin_date;
+      BookingFee    = booking_fee;
+      CreatedAt     = created_at;
+      CreatedBy     = created_by;
+      CurrencyCode  = currency_code;
+      CustomerId    = customer_id;
+      Description   = description;
+      EndDate       = end_date;
+      LastChangedAt = last_changed_at;
+      LastChangedBy = last_changed_by;
+      OverallStatus = Overall_Status;
+      TotalPrice    = total_price;
+    }
+}
+
+//Define the behavior for Child Entity
+define behavior for ZATS_SKL_BOOKING alias Booking
+//make the behavior pool/implementation for BOOKING
+implementation in class zbp_ats_skl_booking unique //It is a practice to mark UNIQUE if we use STRICT mode.
+//Data will be inserted in this DB table
+persistent table /dmo/booking_m
+
+//Draft table specification
+draft table zats_skl_d_book
+
+//If Travel is locked Booking also stays locked
+lock dependent by _Travel
+authorization dependent by _Travel
+//Etag field for update comparison
+etag master LastChangedAt
+early numbering
+{
+  update;
+  delete;
+  field ( readonly ) TravelId, BookingId;
+  field ( mandatory ) CarrierId, ConnectionId, FlightDate, BookingStatus;
+
+  //Reconfirm that Booking will Create with travel Draft
+  association _Travel { with draft; }
+
+  //Assure that child entity also managed with DRAFT
+  association _BookingSupplement { create; with draft; } //Doubt -> Diff between this line and
+
+  internal action reCalcTotalPrice;
+
+  determination CalculateTotalPrice on modify
+  {
+    field FlightPrice, CurrencyCode;
+  }
+
+  side effects
+  {
+    field FlightPrice affects field _Travel.TotalPrice;
+  }
+
+  mapping for /dmo/booking_m
+    {
+      TravelId      = travel_id;
+      BookingId     = booking_id;
+      BookingDate   = booking_date;
+      CustomerId    = customer_id;
+      CarrierId     = carrier_id;
+      ConnectionId  = connection_id;
+      FlightDate    = flight_date;
+      FlightPrice   = flight_price;
+      currencycode  = Currency_Code;
+      bookingstatus = Booking_Status;
+      lastchangedat = Last_Changed_At;
+    }
+}
+
+//Define the behavior for Child Entity
+define behavior for ZATS_SKL_BOOKSUPPL alias BookSuppl
+//make the behavior pool/implementation for BOOKING SUPPLEMENT
+implementation in class zbp_ats_skl_booksuppl unique //It is a practice to mark UNIQUE if we use STRICT mode.
+
+persistent table /dmo/booksuppl_m  //Data will be inserted in this DB table
+
+//Draft table for Booking Supplement
+draft table zats_skl_d_bspls
+lock dependent by _Travel
+authorization dependent by _Travel
+etag master LastChangedAt
+early numbering
+{ //Doubt here CREATE is not there, still able to create supplement record.
+  update;
+  delete;
+  field ( readonly ) TravelId, BookingId, BookingSupplementId;
+  field ( mandatory ) Price, SupplementId;
+  association _Travel { with draft; }
+  association _Booking { with draft; }
+
+  mapping for /dmo/booksuppl_m
+    {
+      TravelId            = travel_id;
+      BookingId           = booking_id;
+      BookingSupplementId = booking_supplement_id;
+      SupplementId        = Supplement_id;
+      Price               = Price;
+      CurrencyCode        = currency_code;
+      LastChangedAt       = last_changed_at;
+    }
+}
+
+
+
+//Define the behavior for Child Entity
+define behavior for zats_skl_m_attach alias Attachment
+//make the behavior pool/implementation for BOOKING
+implementation in class zbp_ats_skl_attachment unique //It is a practice to mark UNIQUE if we use STRICT mode.
+//Data will be inserted in this DB table
+persistent table zats_skl_attach
+
+//If Travel is locked Booking also stays locked
+lock dependent by _Travel
+authorization dependent by _Travel
+
+//Draft table specification
+draft table zats_skl_d_att
+
+//Etag field for update comparison
+etag master LastChangedAt
+{
+  update;
+  delete;
+  field ( numbering : managed ) Id;
+  field ( readonly ) TravelId, Id;
+
+  //Reconfirm that Booking will Create with travel Draft
+  association _Travel { with draft; }
+
+  mapping for zats_skl_attach
+    {
+      travelid           = travel_id;
+      id                 = id;
+      memo               = memo;
+      attachment         = attachment;
+      filename           = filename;
+      filetype           = filetype;
+      localcreatedby     = local_created_by;
+      localcreatedat     = local_created_at;
+      locallastchangedby = local_last_changed_by;
+      locallastchangedat = local_last_changed_at;
+      lastchangedat      = last_changed_at;
+    }
+}

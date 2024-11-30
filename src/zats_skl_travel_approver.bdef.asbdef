@@ -1,0 +1,38 @@
+projection;
+strict ( 2 );
+use draft;
+
+define behavior for ZATS_SKL_TRAVEL_APPROVER alias Travel
+{
+  //use create; -> Approver cannot create a Travel.
+  use update;
+  use delete;
+
+  //Static Field Control
+  //User can update only Booking Fee and Travel Status. So we will set a static field control to make other fields uneditable.
+  field (readonly) Travelid, AgencyId, CustomerId, BeginDate, EndDate, TotalPrice, Description,CurrencyCode;
+
+
+  use action acceptTravel;
+  use action rejectTravel;
+
+  use action Edit;
+  use action Activate;
+  use action Resume;
+  use action Discard;
+  use action Prepare;
+
+//Approver cannot create Booking
+//use association _Booking { create; with draft; } -> Old
+use association _Booking; //-> New
+}
+
+define behavior for ZATS_SKL_BOOKING_APPROVER alias Booking
+{
+  //Approver cannot modify or delete Booking
+  //use update;
+  //use delete;
+
+
+  use association _Travel { with draft; }
+}
