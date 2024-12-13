@@ -20,7 +20,7 @@ CLASS ZCL_SKL_VE_CALC IMPLEMENTATION.
 
     CHECK NOT it_original_data IS INITIAL.
 
-    DATA: lt_calc_data TYPE STANDARD TABLE OF zats_xx_travel_processor WITH DEFAULT KEY,
+    DATA: lt_calc_data TYPE STANDARD TABLE OF zats_SKL_travel_processor WITH DEFAULT KEY,
           lv_rate      TYPE p DECIMALS 2 VALUE '0.025'.
 
     lt_calc_data = CORRESPONDING #( it_original_data ).

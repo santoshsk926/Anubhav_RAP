@@ -45,7 +45,7 @@ CLASS ZCL_ATS_SKL_EML IMPLEMENTATION.
         DATA(lv_customer) = '000697'.
 
         MODIFY ENTITIES OF zats_skl_travel ENTITY Travel
-        CREATE FIELDS ( travelid
+        CREATE FIELDS ( "travelid
                         agencyid
                         currencycode
                         begindate

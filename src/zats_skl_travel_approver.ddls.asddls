@@ -46,16 +46,16 @@ define root view entity ZATS_SKL_TRAVEL_APPROVER
           _Booking : redirected to composition child ZATS_SKL_BOOKING_APPROVER,
           _Currency,
           _Customer,
-          _OverallStatus
+          _OverallStatus,
 
-//          //Virtual elements
-//          @ObjectModel.virtualElementCalculatedBy: 'ABAP:ZCL_SKL_VE_CALC'
-//          @EndUserText.label: 'CO2 Tax'
-//          //@ObjectModel.virtualElement: true
-//  virtual CO2Tax         :abap.int4,
-//
-//          @ObjectModel.virtualElementCalculatedBy: 'ABAP:ZCL_SKL_VE_CALC'
-//          @EndUserText.label: 'Week Day'
-//          //@ObjectModel.virtualElement: true
-//  virtual dayOfTheFlight :abap.char(9)
+          //Virtual elements
+          @ObjectModel.virtualElementCalculatedBy: 'ABAP:ZCL_SKL_VE_CALC'
+          @EndUserText.label: 'CO2 Tax'
+          //@ObjectModel.virtualElement: true
+  virtual CO2Tax         :abap.int4,
+
+          @ObjectModel.virtualElementCalculatedBy: 'ABAP:ZCL_SKL_VE_CALC'
+          @EndUserText.label: 'Week Day'
+          //@ObjectModel.virtualElement: true
+  virtual dayOfTheFlight :abap.char(9)
 }
