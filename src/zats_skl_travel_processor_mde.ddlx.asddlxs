@@ -77,7 +77,7 @@ annotate entity ZATS_SKL_TRAVEL_PROCESSOR with
   }]
   @UI.identification: [{ position: 10 },  -->For #IDENTIFICATION_REFERENCE type
   //This will create the button Object page also.
-  { type: #FOR_ACTION, label:'Copy Maddi', dataAction: 'copyTravel' }]
+  { type: #FOR_ACTION, label:'Copy This Travel', dataAction: 'copyTravel' }]
   TravelId;
   @UI.selectionField: [{ position: 20 }]
   @UI.lineItem: [{ position: 20 }]

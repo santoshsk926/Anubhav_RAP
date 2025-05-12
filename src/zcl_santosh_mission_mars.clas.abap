@@ -26,15 +26,20 @@ CLASS ZCL_SANTOSH_MISSION_MARS IMPLEMENTATION.
 
   METHOD reach_to_mars.
     DATA:lv_text TYPE string.
-    DATA(lo_earth) = NEW zcl_earth(  ).
-    DATA(lo_iplanet1) = NEW zcl_planet1(  ).
-    DATA(lo_mars) = NEW zcl_mars(  ).
-
-    APPEND lo_earth->start_engine(  ) TO itab.
-    APPEND lo_earth->leave_orbit(  ) TO itab.
-    APPEND lo_iplanet1->enter_orbit(  ) TO itab.
-    APPEND lo_iplanet1->leave_orbit(  ) TO itab.
-    APPEND lo_mars->enter_orbit(  ) TO itab.
-    APPEND lo_mars->explore_mars(  ) TO itab.
+*    DATA: itab TYPE TABLE OF zskl_gender_um.
+*    DELETE FROM zskl_gender_um.
+*    itab = VALUE #( ( Gender = 'M' gender_desc = 'Male' )
+*                    ( gender = 'F' gender_desc = 'Female' ) ).
+*    INSERT zskl_gender_um FROM TABLE @itab.
+*    DATA(lo_earth) = NEW zcl_earth(  ).
+*    DATA(lo_iplanet1) = NEW zcl_planet1(  ).
+*    DATA(lo_mars) = NEW zcl_mars(  ).
+*
+*    APPEND lo_earth->start_engine(  ) TO itab.
+*    APPEND lo_earth->leave_orbit(  ) TO itab.
+*    APPEND lo_iplanet1->enter_orbit(  ) TO itab.
+*    APPEND lo_iplanet1->leave_orbit(  ) TO itab.
+*    APPEND lo_mars->enter_orbit(  ) TO itab.
+*    APPEND lo_mars->explore_mars(  ) TO itab.
   ENDMETHOD.
 ENDCLASS.
